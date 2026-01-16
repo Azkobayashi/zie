@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2months</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@400;600;700&family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
+    <style>:root {
+    --pink-dark:#d63384; --pink-mid:#ff6b9d; --pink-light:#fff0f6; --white:#fff;
+    --soft-gold:#f4e4bc; --beige:#fff9eb;
+}
+
+body{
+    font-family:'Quicksand',sans-serif; background-color:var(--pink-light);
+    background-image:radial-gradient(circle,#ffd1e3 10%,transparent 11%);
+    background-size:25px 25px; display:flex; justify-content:center; align-items:center;
+    margin:0; height:100vh; overflow:hidden;
+}
+.card{
+    background:white; padding:30px; border-radius:40px; width:85%; max-width:400px;
+    text-align:center; display:none; max-height:85vh; overflow-y:auto;
+    border:4px solid white; box-shadow:0 20px 50px rgba(255,107,157,0.3); z-index:10;
+}
+.card.active{display:block;}
+.btn-primary{
+    background:linear-gradient(135deg,var(--pink-mid),#ff8fab); color:white; border:none;
+    padding:15px 35px; border-radius:50px; cursor:pointer; font-family:'Fredoka One';
+    transition:0.2s; margin-top:15px;
+}
+.btn-primary:hover{transform:scale(1.05);}
+input{
+    width:80%; padding:15px; border-radius:20px; border:2px solid var(--pink-light);
+    text-align:center; margin-bottom:20px; outline:none;
+}
+
+/* GAME */
+#game-area{height:250px; background:#fffafa; border:3px dashed var(--pink-mid);
+border-radius:25px; margin:15px 0; overflow:hidden; position:relative;}
+.falling-heart{position:absolute; font-size:35px; cursor:pointer; pointer-events:auto; transition:transform 0.2s;}
+.falling-heart:hover{transform:scale(1.3);}
+
+/* MEMORIES SLIDER */
+#memories-slider-container{position:relative;}
+#memories-slider{display:flex; overflow-x:auto; gap:10px; scroll-snap-type:x mandatory; scroll-behavior:smooth; padding-bottom:10px;}
+#memories-slider::-webkit-scrollbar{display:none;}
+.slider-item{flex:0 0 80%; scroll-snap-align:center; border-radius:20px; position:relative; transition:transform 0.3s;}
+.slider-item:hover{transform:scale(1.05);}
+.slider-caption{position:absolute; bottom:10px; left:50%; transform:translateX(-50%); background:rgba(255,255,255,0.8); padding:5px 10px; border-radius:10px; font-weight:bold;}
+.arrow-btn{position:absolute; top:50%; transform:translateY(-50%); background:rgba(255,107,157,0.7); border:none; color:white; font-size:2rem; border-radius:50%; width:40px; height:40px; cursor:pointer; display:flex; justify-content:center; align-items:center; z-index:100;}
+#prev-arrow{left:-20px;} #next-arrow{right:-20px;}
+
+/* LETTER MODAL */
+#letter-modal{display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); backdrop-filter:blur(8px); justify-content:center; align-items:center; z-index:1000;}
+.scroll-content{background:var(--beige); padding:30px; width:80%; max-width:350px; border-radius:20px; font-family:'Dancing Script',cursive; font-size:1rem; color:#5d4037; max-height:70vh; overflow-y:auto; border:2px solid var(--soft-gold);}
+
+/* SECRET GALLERY */
+.me-gallery{display:none; grid-template-columns:1fr 1fr; gap:10px; max-height:250px; overflow-y:auto; padding:10px; border-radius:20px; background:#fffcfd; border:1px solid #ffeef2;}
+.me-gallery img{width:100%; border-radius:15px; cursor:pointer; transition:transform 0.3s;}
+.me-gallery img:hover{transform:scale(1.05);}
+.secret-btn{cursor:pointer; font-size:20px; display:inline-block; margin-top:20px; color:#ffccd5;}
+
+/* PARTICLES */
+.particle, .trail{position:fixed; pointer-events:none; z-index:9999;}</style>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+    <!-- WELCOME -->
+    <section id="screen-welcome" class="card active">
+        <h1 style="font-size:3rem;">🌸</h1>
+        <h1>hi bebe!</h1>
+        <p>I made this just for you. ready?</p>
+        <button class="btn-primary" id="start-btn">lets go! </button>
+    </section>
+
+    <!-- GAME -->
+    <section id="screen-game" class="card">
+        <h2>take my heart ❤️</h2>
+        <div id="score-text">score: <span id="score">0</span>/10</div>
+        <div id="game-area"></div>
+    </section>
+
+    <!-- DATE -->
+    <section id="screen-date" class="card">
+        <h2>Where We Began📅</h2>
+        <p>enter the date we first started...</p>
+        <input type="text" id="date-input" placeholder="MM/DD/YY">
+        <button class="btn-primary" onclick="checkDate()">Verify ✨</button>
+    </section>
+
+    <!-- SECRET -->
+    <section id="screen-secret" class="card">
+        <h2>one more?</h2>
+        <p>what emoji do I always use?</p>
+        <input type="text" id="secret-input" placeholder="Your answer...">
+        <button class="btn-primary" onclick="checkSecret()">unlock 🔓</button>
+    </section>
+
+    <!-- WHY I LOVE YOU -->
+    <section id="screen-reasons" class="card">
+        <h2>why I Love You</h2>
+        <div id="reasons-container">
+            <div class="reason-card" onclick="reveal(this,'you understand me even without words')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you understand me even when i dont say much')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you are patient with me when things are hard')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you always choose to be kind')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you stay and dont change easily')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you make things feel lighter')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you don’t try to fix everything you just stay with me.')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'being with you feels calm')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'i feel safe being myself with you')">✨ Tap to reveal</div>
+<div class="reason-card" onclick="reveal(this,'you feel like home to me')">✨ Tap to reveal</div>
+        </div>
+        <button class="btn-primary" id="reasons-next" style="display:none;" onclick="showScreen('screen-memories')">Continue 💖</button>
+    </section>
+
+    <!-- MEMORIES SLIDER -->
+    <section id="screen-memories" class="card">
+        <h2>our memories 📸</h2>
+        <div id="memories-slider-container">
+            <button class="arrow-btn" id="prev-arrow">&#10094;</button>
+            <div id="memories-slider">
+                <div class="slider-item"><img src="photo1.jpg"><div class="slider-caption">wala muna ito😭</div></div>
+                <div class="slider-item"><img src="photo2.jpg"><div class="slider-caption">wala muna ito😭</div></div>
+                <div class="slider-item"><video src="video1.mp4" controls></video><div class="slider-caption">wala muna ito😭</div></div>
+                <div class="slider-item"><img src="photo3.jpg"><div class="slider-caption">wala muna ito😭</div></div>
+            </div>
+            <button class="arrow-btn" id="next-arrow">&#10095;</button>
+        </div>
+        <button class="btn-primary" onclick="showScreen('screen-music')">Next 🎵</button>
+    </section>
+
+    <!-- MUSIC CARD -->
+    <section id="screen-music" class="card">
+        <h2>this music reminded me of you 🎶</h2>
+        <iframe width="300" height="170" 
+src="https://www.youtube.com/embed/908773h7OAM?autoplay=1&loop=1&playlist=908773h7OAM" 
+title="YouTube video" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <br><br>
+        <button class="btn-primary" onclick="toggleLetter(true)">Read My Letter ✉️</button>
+        <br>
+        <span class="secret-btn" onclick="showMe()">❤</span>
+        <div id="me-gallery" class="me-gallery">
+            <img src="me1.jpg"><img src="me2.jpg">
+            <img src="me3.jpg"><img src="me4.jpg">
+            <img src="me5.jpg"><img src="me6.jpg">
+            <img src="me7.jpg"><img src="me8.jpg">
+        </div>
+    </section>
+
+</div>
+
+<!-- LETTER MODAL -->
+<div id="letter-modal" onclick="toggleLetter(false)">
+    <div class="scroll-content" onclick="event.stopPropagation()">
+        <p>my dearest Ehliya,</p>
+
+<p>
+nagkakilala tayo sa pinaka-unexpected na way sa facebook, dahil sa minecraft server na ginagawa ko noon. you joined, we talked, and slowly naging close tayo. walang pilit, walang rush. everything just felt right.
+</p>
+
+<p>
+noong june 16, 2025, 2:29 am, sinabi mo na gusto mo ako. i felt the same, pero hindi ko minadali. gusto kong maramdaman mo kung ano ang real courtship may effort, respeto, at totoong intensyon.
+</p>
+
+<p>
+noong august 9, 2025, i sent you a flower and asked you properly. when you said yes, it meant more than you know. at noong november 16, 2025, 3:32 am, officially naging tayo and that moment will always be special to me.
+</p>
+
+<p>
+what we built taught me patience, effort, and real love. sa simpleng chats, small gestures, at pagiging consistent, nakabuo tayo ng something strong and genuine.
+</p>
+
+<p>
+ang gusto ko sa’yo ay kung paano ka umintindi kahit hindi ako magsalita nang marami. you choose kindness, you stay patient, and you make everything feel lighter. being with you feels like peace and that’s something rare.
+</p>
+
+<p>
+thank you for choosing me, for trusting the process, and for being you. this story is my favorite because it’s ours.
+</p>
+
+<p style="text-align:right; text-transform: lowercase;">always yours,<br>— Jordan 💛</p>
+    </div>
+</div>
+
+<script>
+    // CONSTANTS
+const DATE_ANS="02/17/24";
+const SECRET_ANS="😏";
+
+// VARIABLES
+let score=0, rev=0;
+
+// SHOW SCREEN
+function showScreen(id){
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id==='screen-game') startGame();
+}
+
+// CHECK DATE
+function checkDate(){
+    if(document.getElementById('date-input').value===DATE_ANS) showScreen('screen-secret');
+    else alert("Try again! ❤️");
+}
+
+// CHECK SECRET
+function checkSecret(){
+    if(document.getElementById('secret-input').value.toLowerCase()===SECRET_ANS) showScreen('screen-reasons');
+    else alert("Not quite! 🥰");
+}
+
+// REVEAL REASONS
+function reveal(el,txt){
+    if(el.dataset.rev) return;
+    el.innerText=txt;
+    el.style.borderColor="#ff6b9d";
+    el.dataset.rev="t"; rev++;
+    if(rev>=3){
+        document.getElementById('reasons-next').style.display='inline-block';
+        confetti({particleCount:80,spread:70,origin:{y:0.6}});
+    }
+}
+
+// TOGGLE LETTER
+function toggleLetter(show){
+    document.getElementById('letter-modal').style.display=show?'flex':'none';
+}
+
+// SHOW GALLERY
+function showMe(){
+    const gal=document.getElementById('me-gallery');
+    gal.style.display=(gal.style.display==='grid'?'none':'grid');
+}
+
+// START BUTTON
+document.getElementById('start-btn').addEventListener('click',()=>showScreen('screen-game'));
+
+// GAME
+function startGame(){
+    const area=document.getElementById('game-area'); area.innerHTML=''; score=0;
+    const gameLoop=setInterval(()=>{
+        if(!document.getElementById('screen-game').classList.contains('active')){ clearInterval(gameLoop); return; }
+        const h=document.createElement('div'); h.className='falling-heart'; h.innerHTML='❤️';
+        h.style.left=Math.random()*(area.clientWidth-50)+'px';
+        h.style.top='-50px';
+        area.appendChild(h);
+        let pos=-50;
+        const fall=setInterval(()=>{
+            pos+=4; h.style.top=pos+'px';
+            if(pos>area.clientHeight){ clearInterval(fall); h.remove(); }
+        },20);
+        h.onclick=()=>{
+            score++; document.getElementById('score').innerText=score;
+            h.remove();
+            if(score>=10){ clearInterval(gameLoop); showScreen('screen-date'); confetti({particleCount:100,spread:80,origin:{y:0.6}}); }
+        };
+    },800);
+}
+
+// MEMORIES SLIDER
+const slider=document.getElementById('memories-slider');
+document.getElementById('prev-arrow').addEventListener('click',()=>{ slider.scrollBy({left:-slider.offsetWidth*0.8,behavior:'smooth'}); });
+document.getElementById('next-arrow').addEventListener('click',()=>{ slider.scrollBy({left:slider.offsetWidth*0.8,behavior:'smooth'}); });
+
+// FLOATING PARTICLES
+// SPARKLE TRAIL
+document.addEventListener('mousemove',e=>{
+    if(Math.random()>0.9){
+        const h=document.createElement('div'); h.className='trail'; h.innerHTML='✨';
+        h.style.left=e.pageX+'px'; h.style.top=e.pageY+'px';
+        document.body.appendChild(h); setTimeout(()=>h.remove(),1000);
+    }
+});
+    </script>
+</body>
+</html>
